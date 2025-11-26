@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – Users Control</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    background:#f4f5ff;
+    font-family:'Poppins',sans-serif;
+}
+
+.header{
+    background:#4b59ff;
+    padding:15px;
+    color:white;
+    text-align:center;
+    font-size:22px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    margin-top:20px;
+    padding:15px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#ececff;
+    padding:12px;
+}
+td{
+    padding:10px;
+    border-bottom:1px solid #eee;
+}
+
+.action-btn{
+    padding:6px 12px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    margin-right:5px;
+}
+
+.plus{ background:#4bff62; }
+.minus{ background:#ff4e4e; }
+
+.user-photo{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    object-fit:cover;
+}
+input{
+    width:70px;
+    padding:5px;
+    margin-right:5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Admin Control Panel</div>
+
+<div class="container">
+    <div class="card">
+        <h2>All Users</h2>
+
+        <table id="userTable">
+            <tr>
+                <th>Photo</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Balance</th>
+                <th>PIN</th>
+                <th>Modify</th>
+            </tr>
+        </table>
+
+        <div id="emptyMsg" style="display:none; text-align:center; opacity:.6;">No users found!</div>
+    </div>
+</div>
+
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
+    authDomain: "post-c7e41.firebaseapp.com",
+    databaseURL: "https://post-c7e41-default-rtdb.firebaseio.com",
+    projectId: "post-c7e41",
+    messagingSenderId: "758133068153",
+    appId: "1:758133068153:web:28ef27e45d8037e0d49fa8"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.database();
+
+const ADMIN_EMAIL = "admin@gmail.com"; // এখানে তোমার অ্যাডমিন ইমেইল
+
+auth.onAuthStateChanged(user=>{
+    if(!user){
+        location.href="admin-login.html";
+        return;
+    }
+
+    loadUsers();
+});
+
+/* Load All Users */
+function loadUsers(){
+    const table = document.getElementById("userTable");
+    const empty = document.getElementById("emptyMsg");
+
+    db.ref("wallet").on("value", snap=>{
+        table.innerHTML = `
+            <tr>
+                <th>Photo</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Balance</th>
+                <th>PIN</th>
+                <th>Modify</th>
+            </tr>
+        `;
+
+        if(!snap.exists()){
+            empty.style.display="block";
+            return;
+        }
+
+        empty.style.display="none";
+
+        snap.forEach(userWallet=>{
+            let uid = userWallet.key;
+            let wallet = userWallet.val();
+
+            db.ref("users/"+uid).once("value").then(userSnap=>{
+                let u = userSnap.val() || {};
+
+                let row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td><img class="user-photo" src="${u.photo || 'https://i.ibb.co/Vwz6SfT/user.png'}"></td>
+                    <td>${u.name || "Unknown"}</td>
+                    <td>${u.email || "---"}</td>
+                    <td id="bal-${uid}">${wallet.dollar || 0}</td>
+                    <td>${wallet.pin || "---"}</td>
+                    <td>
+                        <input id="amt-${uid}" type="number" placeholder="Amount">
+                        <button class="action-btn plus" onclick="increase('${uid}')">+</button>
+                        <button class="action-btn minus" onclick="decrease('${uid}')">-</button>
+                    </td>
+                `;
+
+                table.appendChild(row);
+            });
+        });
+    });
+}
+
+/* Increase Balance */
+function increase(uid){
+    let amt = Number(document.getElementById("amt-"+uid).value);
+    if(amt<=0) return alert("Enter valid amount!");
+
+    db.ref("wallet/"+uid).once("value").then(snap=>{
+        let oldBal = snap.val().dollar || 0;
+        let newBal = oldBal + amt;
+
+        db.ref("wallet/"+uid).update({dollar:newBal});
+        document.getElementById("bal-"+uid).innerText = newBal;
+    });
+}
+
+/* Decrease Balance */
+function decrease(uid){
+    let amt = Number(document.getElementById("amt-"+uid).value);
+    if(amt<=0) return alert("Enter valid amount!");
+
+    db.ref("wallet/"+uid).once("value").then(snap=>{
+        let oldBal = snap.val().dollar || 0;
+        let newBal = oldBal - amt;
+        if(newBal < 0) newBal = 0;
+
+        db.ref("wallet/"+uid).update({dollar:newBal});
+        document.getElementById("bal-"+uid).innerText = newBal;
+    });
+}
+</script>
+
+</body>
+</html>

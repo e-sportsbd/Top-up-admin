@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Orders</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2>📦 My Top-up Orders</h2>
+<div id="orderList"></div>
+
+<script src="firebase.js"></script>
+<script>
+
+db.ref("orders").on("value", snap => {
+    const data = snap.val();
+    let html = "";
+
+    for (let id in data) {
+        html += `
+            <div class='card'>
+                <p>UID: ${data[id].uid}</p>
+                <p>Diamonds: ${data[id].diamond}</p>
+                <p>Payment: ${data[id].payment}</p>
+                <p>Status: <b>${data[id].status}</b></p>
+            </div>
+        `;
+    }
+
+    document.getElementById("orderList").innerHTML = html;
+});
+
+</script>
+
+</body>
+</html>

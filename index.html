@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+
+<style>
+body{
+  background:#0b0b0b;
+  font-family:"Poppins",sans-serif;
+  color:white;
+  padding:20px;
+  margin:0;
+}
+
+h2{
+  text-align:center;
+  margin-bottom:28px;
+  color:#ff3366;
+  letter-spacing:1px;
+  font-weight:600;
+}
+
+.menu{
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  max-width:450px;
+  margin:auto;
+}
+
+button{
+  padding:15px;
+  background:linear-gradient(135deg,#1a1a1a,#111);
+  color:white;
+  border:1px solid #2e2e2e;
+  border-radius:12px;
+  font-size:17px;
+  cursor:pointer;
+  text-align:left;
+  transition:0.25s;
+  box-shadow:0 0 8px rgba(255,0,85,0.06);
+}
+
+button:hover{
+  background:#1d1d1d;
+  transform:scale(1.03);
+  box-shadow:0 0 12px rgba(255,0,85,0.15);
+}
+
+.logout{
+  background:#ff2e2e !important;
+  border-color:#ff2e2e !important;
+}
+.logout:hover{
+  background:#ff1f1f !important;
+  box-shadow:0 0 12px rgba(255,50,50,0.4);
+}
+</style>
+</head>
+
+<body>
+
+<h2>⚡ Admin Control Panel</h2>
+
+<div class="menu">
+
+  <button onclick="go('add_money_control.html')">💵 Money Control</button>
+  <button onclick="go('users-controll.html')">👥 All Users List</button>
+  <button onclick="go('ban-user.html')">🚫 Ban / Unban User</button>
+  <button onclick="go('match-list.html')">📄 All Matches</button>
+  <button onclick="go('match-result.html')">🏆 Match Result Upload</button>
+  <button onclick="go('joined-players.html')">🧑‍🤝‍🧑 Joined Players</button>
+  <button onclick="go('notice-control.html')">📢 Add Notice</button>
+  <button onclick="go('home_control.html')">🏠 Home Control</button>
+  <button onclick="go('support-control.html')">📩 Support Messages</button>
+  <button onclick="go('payment-methods.html')">🏦 Payment Methods</button>
+  <button onclick="go('admin_setting.html')">⚙️ Admin Settings</button>
+
+  <button class="logout" onclick="logout()">Logout</button>
+
+</div>
+
+<script>
+// ---------- ADMIN CHECK ----------
+if(localStorage.getItem("admin") !== "true"){
+    alert("You are not admin!");
+    window.location.href = "admin_login.html";
+}
+
+// ---------- PAGE CHANGE ----------
+function go(page){
+  window.location.href = page;
+}
+
+// ---------- LOGOUT ----------
+function logout(){
+  localStorage.removeItem("admin");
+  window.location.href = "admin_login.html";
+}
+</script>
+
+</body>
+</html>

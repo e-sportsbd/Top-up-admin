@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADMIN PANEL</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    background:#0d0d0d;
+    color:white;
+    font-family:'Poppins',sans-serif;
+}
+
+h2{
+    text-align:center;
+    margin:20px 0;
+}
+
+.box{
+    background:#1a1a1a;
+    margin:15px;
+    padding:15px;
+    border-radius:12px;
+}
+
+input, select{
+    width:100%;
+    padding:12px;
+    margin-top:8px;
+    background:#111;
+    border:1px solid #444;
+    border-radius:10px;
+    color:white;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    background:#1877f2;
+    border:none;
+    border-radius:10px;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.table{
+    margin-top:15px;
+    width:100%;
+    border-collapse:collapse;
+}
+
+.table th, .table td{
+    border:1px solid #555;
+    padding:10px;
+    text-align:center;
+}
+
+.delete-btn{
+    background:#e63946;
+}
+
+.edit-btn{
+    background:#ffb703;
+}
+</style>
+</head>
+<body>
+
+<h2>🔥 ADMIN CONTROL PANEL</h2>
+
+<!-- ADD PACKAGE -->
+<div class="box">
+    <h3>➤ Add New Package</h3>
+
+    <input type="number" id="addDiamonds" placeholder="Diamonds (e.g., 100)">
+    <input type="number" id="addPrice" placeholder="Price (BDT)">
+    
+    <button onclick="addPackage()">ADD PACKAGE</button>
+</div>
+
+<!-- PACKAGE LIST -->
+<div class="box">
+    <h3>➤ All Packages</h3>
+
+    <table class="table" id="packageTable">
+        <tr>
+            <th>Diamonds</th>
+            <th>Price</th>
+            <th>Action</th>
+        </tr>
+    </table>
+</div>
+
+<!-- USER BALANCE -->
+<div class="box">
+    <h3>➤ Add User Balance</h3>
+
+    <input type="text" id="balanceUid" placeholder="User UID">
+    <input type="number" id="balanceAmount" placeholder="Amount (৳)">
+    
+    <button onclick="addBalance()">ADD BALANCE</button>
+</div>
+
+<!-- ORDERS -->
+<div class="box">
+    <h3>➤ Orders Management</h3>
+
+    <table class="table" id="orderTable">
+        <tr>
+            <th>Player</th>
+            <th>Package</th>
+            <th>Pay</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </table>
+</div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
+            authDomain: "noreply@post-c7e41.firebaseapp.com",
+            databaseURL: "https://post-c7e41-default-rtdb.firebaseio.com",
+            projectId: "post-c7e41",
+            messagingSenderId: "758133068153",
+            appId: "1:758133068153:web:28ef27e45d8037e0d49fa8"
+};
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
+// --------------------
+// ADD PACKAGE
+// --------------------
+function addPackage(){
+    let d = document.getElementById("addDiamonds").value;
+    let p = document.getElementById("addPrice").value;
+
+    if(d=="" || p==""){ alert("Input missing"); return; }
+
+    db.ref("packages").push({
+        diamonds: Number(d),
+        price: Number(p)
+    });
+
+    alert("Package Added!");
+}
+
+// --------------------
+// SHOW PACKAGE LIST
+// --------------------
+db.ref("packages").on("value", snap => {
+    let table = document.getElementById("packageTable");
+    table.innerHTML = `
+        <tr>
+            <th>Diamonds</th>
+            <th>Price</th>
+            <th>Action</th>
+        </tr>
+    `;
+
+    snap.forEach(p => {
+        let d = p.val();
+        table.innerHTML += `
+            <tr>
+                <td>${d.diamonds}</td>
+                <td>${d.price}</td>
+                <td>
+                    <button class="delete-btn" onclick="deletePackage('${p.key}')">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+});
+
+function deletePackage(id){
+    db.ref("packages/"+id).remove();
+    alert("Deleted!");
+}
+
+// --------------------
+// ADD USER BALANCE
+// --------------------
+function addBalance(){
+    let uid = document.getElementById("balanceUid").value;
+    let amt = Number(document.getElementById("balanceAmount").value);
+
+    if(uid=="" || amt==""){ alert("Input missing"); return; }
+
+    db.ref("users/"+uid+"/balance").transaction(b => {
+        return (b || 0) + amt;
+    });
+
+    alert("Balance Added!");
+}
+
+// --------------------
+// SHOW ORDERS
+// --------------------
+db.ref("orders").on("value", snap => {
+    let table = document.getElementById("orderTable");
+    table.innerHTML = `
+        <tr>
+            <th>Player</th>
+            <th>Package</th>
+            <th>Pay</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    `;
+
+    snap.forEach(o => {
+        let d = o.val();
+
+        table.innerHTML += `
+            <tr>
+                <td>${d.playerId}</td>
+                <td>${d.package.diamonds} 💎</td>
+                <td>${d.payMethod}</td>
+                <td>${d.status}</td>
+                <td>
+                    <button onclick="approveOrder('${o.key}')">Approve</button>
+                    <button onclick="finishOrder('${o.key}')">Done</button>
+                </td>
+            </tr>
+        `;
+    });
+});
+
+// APPROVE
+function approveOrder(id){
+    db.ref("orders/"+id+"/status").set("Approved");
+    alert("Approved!");
+}
+
+// COMPLETE
+function finishOrder(id){
+    db.ref("orders/"+id+"/status").set("Delivered");
+    alert("Delivered!");
+}
+</script>
+
+</body>
+</html>

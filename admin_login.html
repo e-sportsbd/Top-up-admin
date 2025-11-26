@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<style>
+body{
+  margin:0;
+  background:#0b0b0b;
+  font-family:'Poppins',sans-serif;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+}
+
+.login-box{
+  width:90%;
+  max-width:380px;
+  background:#111;
+  padding:30px;
+  border-radius:15px;
+  box-shadow:0 0 25px rgba(255,0,80,0.15);
+}
+
+h2{
+  text-align:center;
+  color:#ff0055;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  background:#1a1a1a;
+  border:1px solid #333;
+  border-radius:10px;
+  color:white;
+  margin-bottom:15px;
+}
+
+.btn{
+  width:100%;
+  padding:12px;
+  background:#ff0055;
+  color:white;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.error{
+  margin-top:10px;
+  color:#ff3d3d;
+  text-align:center;
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+  <h2>Admin Login</h2>
+
+  <label>Email</label>
+  <input type="email" id="email" placeholder="Enter admin email">
+
+  <label>Password</label>
+  <input type="password" id="password" placeholder="Enter admin password">
+
+  <button class="btn" onclick="login()">Login</button>
+
+  <div class="error" id="error">❌ Email অথবা Password ভুল!</div>
+</div>
+
+<script>
+// ---------- FIREBASE CONFIG ----------
+const firebaseConfig = {
+    apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
+    authDomain: "post-c7e41.firebaseapp.com",
+    databaseURL: "https://post-c7e41-default-rtdb.firebaseio.com",
+    projectId: "post-c7e41",
+    messagingSenderId: "758133068153",
+    appId: "1:758133068153:web:28ef27e45d8037e0d49fa8"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// ---------- ADMIN LOGIN ----------
+function login(){
+    let email = document.getElementById("email").value.trim();
+    let pass  = document.getElementById("password").value.trim();
+
+    auth.signInWithEmailAndPassword(email, pass)
+    .then(()=>{
+        localStorage.setItem("admin", "true");
+        window.location.href = "index.html"; // Dashboard
+    })
+    .catch(()=>{
+        document.getElementById("error").style.display = "block";
+    });
+}
+</script>
+
+</body>
+</html>

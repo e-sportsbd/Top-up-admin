@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOPUPBD Admin Panel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+    body{
+        background:#f4f7ff;
+        font-family:'Poppins',sans-serif;
+        margin:0;
+    }
+    .header{
+        background:#1e90ff;
+        color:white;
+        padding:15px;
+        text-align:center;
+        font-size:22px;
+        font-weight:600;
+    }
+    .container{
+        padding:15px;
+    }
+    .block{
+        background:white;
+        padding:15px;
+        border-radius:10px;
+        margin-bottom:20px;
+        box-shadow:0 3px 6px rgba(0,0,0,0.1);
+    }
+    .block h3{
+        margin-top:0;
+    }
+    input,textarea{
+        width:100%;
+        padding:10px;
+        margin-top:8px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        font-size:14px;
+    }
+    button{
+        margin-top:10px;
+        padding:10px 15px;
+        background:#1e90ff;
+        color:white;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+        font-size:15px;
+        font-weight:600;
+    }
+    .product{
+        background:#eef4ff;
+        padding:12px;
+        border-radius:8px;
+        margin-top:10px;
+    }
+</style>
+</head>
+<body>
+
+<div class="header">TOPUPBD Admin Panel</div>
+
+<div class="container">
+
+    <!-- Notice Control -->
+    <div class="block">
+        <h3>🔔 Notice</h3>
+        <textarea id="notice" rows="3" placeholder="Write Notice..."></textarea>
+        <button onclick="saveNotice()">Save Notice</button>
+    </div>
+
+    <!-- Banner Control -->
+    <div class="block">
+        <h3>🖼 Banner Image URL</h3>
+        <input type="text" id="banner" placeholder="Banner Image URL">
+        <button onclick="saveBanner()">Save Banner</button>
+    </div>
+
+    <!-- Follow Links -->
+    <div class="block">
+        <h3>📲 Follow Links</h3>
+        <input type="text" id="wa" placeholder="WhatsApp Link">
+        <input type="text" id="tg" placeholder="Telegram Link">
+        <input type="text" id="yt" placeholder="YouTube Link">
+        <button onclick="saveFollow()">Save Links</button>
+    </div>
+
+    <!-- Products -->
+    <div class="block">
+        <h3>🎮 Products</h3>
+
+        <input type="text" id="pName" placeholder="Product Name">
+        <input type="text" id="pImg" placeholder="Product Image URL">
+        <input type="text" id="pLink" placeholder="Product Page Link">
+
+        <button onclick="addProduct()">Add Product</button>
+
+        <h4>Product List</h4>
+        <div id="productList"></div>
+    </div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "YOUR-KEY",
+        authDomain: "YOUR-PROJECT.firebaseapp.com",
+        databaseURL: "https://YOUR-PROJECT.firebaseio.com",
+        projectId: "YOUR-PROJECT",
+        storageBucket: "",
+        messagingSenderId: "00000000",
+        appId: "1:000:web:000"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Load Notice
+    db.ref("home/notice").on("value", s => {
+        document.getElementById("notice").value = s.val();
+    });
+
+    function saveNotice(){
+        db.ref("home/notice").set(
+            document.getElementById("notice").value
+        );
+        alert("Notice Updated!");
+    }
+
+    // Load Banner
+    db.ref("home/banner").on("value", s => {
+        document.getElementById("banner").value = s.val();
+    });
+
+    function saveBanner(){
+        db.ref("home/banner").set(
+            document.getElementById("banner").value
+        );
+        alert("Banner Updated!");
+    }
+
+    // Follow Links
+    db.ref("home/follow").on("value", s => {
+        let d = s.val();
+        document.getElementById("wa").value = d.whatsapp;
+        document.getElementById("tg").value = d.telegram;
+        document.getElementById("yt").value = d.youtube;
+    });
+
+    function saveFollow(){
+        db.ref("home/follow").set({
+            whatsapp: document.getElementById("wa").value,
+            telegram: document.getElementById("tg").value,
+            youtube: document.getElementById("yt").value
+        });
+        alert("Links Updated!");
+    }
+
+    // Products
+    db.ref("home/products").on("value", s => {
+        let list = document.getElementById("productList");
+        list.innerHTML = "";
+        s.forEach(it => {
+            let p = it.val();
+            list.innerHTML += `
+                <div class="product">
+                    <b>${p.name}</b><br>
+                    <img src="${p.image}" width="100"><br>
+                    <small>${p.link}</small><br>
+                    <button onclick="delProduct('${it.key}')">Delete</button>
+                </div>
+            `;
+        });
+    });
+
+    function addProduct(){
+        db.ref("home/products").push({
+            name: document.getElementById("pName").value,
+            image: document.getElementById("pImg").value,
+            link: document.getElementById("pLink").value
+        });
+        alert("Product Added!");
+    }
+
+    function delProduct(id){
+        db.ref("home/products/" + id).remove();
+        alert("Deleted!");
+    }
+</script>
+
+</body>
+</html>
