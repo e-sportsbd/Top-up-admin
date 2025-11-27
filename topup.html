@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Fire Topup</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    background:linear-gradient(140deg,#ffe7db,#fff1f1,#e7f0ff);
+    font-family:'Poppins', sans-serif;
+    min-height:100vh;
+    padding-bottom:160px;
+}
+
+/* HEADER */
+.header{
+    padding:12px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(30,144,255,0.85);
+    color:white;
+    backdrop-filter:blur(12px);
+    box-shadow:0 4px 18px rgba(0,0,0,0.25);
+}
+.logo{ display:flex; align-items:center; gap:10px; font-size:22px; font-weight:700; }
+.logo img{ height:42px; }
+
+/* BALANCE */
+.balance-box{
+    background:rgba(255,255,255,0.85);
+    padding:7px 16px;
+    border-radius:30px;
+    color:#1e90ff;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-weight:700;
+    box-shadow:0 2px 10px rgba(0,0,0,0.25);
+}
+
+/* LOGIN */
+.login-btn{
+    background:white;
+    padding:7px 16px;
+    border-radius:25px;
+    color:#1e90ff;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 2px 10px rgba(0,0,0,0.25);
+}
+
+/* PROFILE */
+.profile-img{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    border:2px solid white;
+}
+
+/* SECTION */
+.section{
+    background:rgba(255,255,255,0.55);
+    margin:18px;
+    padding:22px;
+    border-radius:20px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.12);
+}
+.section-title{
+    font-size:20px;
+    font-weight:700;
+    margin-bottom:16px;
+    color:#082857;
+}
+
+/* PACKAGE GRID */
+.pack-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+.pack{
+    background:rgba(255,255,255,0.75);
+    border-radius:18px;
+    padding:20px 10px;
+    text-align:center;
+    font-weight:600;
+    cursor:pointer;
+    border:2px solid transparent;
+    transition:.25s;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+.pack.active{
+    border:2px solid #1e90ff;
+    background:rgba(30,144,255,0.15);
+}
+
+/* INPUT */
+.input-box{
+    width:100%;
+    padding:17px;
+    font-size:17px;
+    border-radius:16px;
+    border:2px solid #d6deed;
+    background:rgba(255,255,255,0.65);
+}
+.input-box:focus{
+    border-color:#1e90ff;
+    background:white;
+    box-shadow:0 0 12px rgba(30,144,255,0.35);
+}
+
+/* PAYMENT */
+.paybox{
+    flex:1;
+    background:rgba(255,255,255,0.7);
+    padding:17px;
+    border-radius:16px;
+    border:2px solid transparent;
+    text-align:center;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,0.12);
+}
+.paybox.active{
+    border-color:#1e90ff;
+    background:rgba(30,144,255,0.20);
+}
+
+/* BUY BUTTON */
+.buy-btn{
+    width:100%;
+    padding:18px;
+    font-size:19px;
+    border:none;
+    border-radius:16px;
+    margin-top:22px;
+    font-weight:700;
+    background:#1e90ff;
+    color:white;
+    cursor:pointer;
+    box-shadow:0 4px 15px rgba(0,0,0,0.25);
+}
+
+/* HELP */
+.call-btn{
+    position:fixed;
+    right:15px;
+    bottom:110px;
+    width:70px;
+    height:70px;
+    background:#ff4b4b;
+    border-radius:50%;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size:16px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.25);
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="logo">
+        <img src="https://i.ibb.co.com/fGt7pS45/Picsart-25-09-30-23-06-37-837.webp">
+        EASY TOPUP
+    </div>
+
+    <div id="balanceBox" class="balance-box" style="display:none;">
+        <img src="wallet.png" width="22">
+        <span id="walletBalance">0৳</span>
+    </div>
+
+    <div id="loginButton" class="login-btn" onclick="go('login.html')">Login</div>
+
+    <img id="userPhoto" class="profile-img" src="profile.png" style="display:none;">
+</div>
+
+<!-- SELECT PACKAGE -->
+<div class="section">
+    <div class="section-title">১) Select Package</div>
+    <div id="packageList" class="pack-grid"></div>
+</div>
+
+<!-- UID -->
+<div class="section">
+    <div class="section-title">২) Account Info</div>
+    <input id="playerId" type="number" class="input-box" placeholder="আপনার Free Fire UID লিখুন">
+</div>
+
+<!-- PAYMENT -->
+<div class="section">
+    <div class="section-title">৩) Select Payment</div>
+
+    <div style="display:flex;gap:15px;">
+        <div id="walletBox" class="paybox" onclick="selectMethod('wallet')">Wallet Pay</div>
+        <div id="autoBox" class="paybox" onclick="selectMethod('auto')">Instant Pay</div>
+    </div>
+
+    <button onclick="buyNow()" class="buy-btn">Buy Now</button>
+</div>
+
+<div class="call-btn" onclick="go('support.html')">Help</div>
+
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+
+function go(p){ location.href = p; }
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
+  authDomain: "post-c7e41.firebaseapp.com",
+  databaseURL: "https://post-c7e41-default-rtdb.firebaseio.com/",
+  projectId: "post-c7e41",
+  messagingSenderId: "758133068153",
+  appId: "1:758133068153:web:5513a1de83491c81776084"
+};
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.database();
+
+/* LOGIN */
+auth.onAuthStateChanged(user=>{
+    if(user){
+        loginButton.style.display="none";
+        balanceBox.style.display="flex";
+        userPhoto.style.display="block";
+        userPhoto.src = user.photoURL || "profile.png";
+
+        loadWallet(user.uid);
+    } else {
+        loginButton.style.display="block";
+        balanceBox.style.display="none";
+        userPhoto.style.display="none";
+    }
+});
+
+/* LOAD WALLET */
+let currentWallet = 0;
+function loadWallet(uid){
+    db.ref("wallet/"+uid).on("value",snap=>{
+        let d = snap.val() || {};
+        currentWallet = d.dollar || 0;
+        walletBalance.innerText = currentWallet + "৳";
+    });
+}
+
+/* LOAD TOPUP PACKAGES */
+const category = "topup";  
+
+db.ref("products/" + category).on("value", snap=>{
+    const box = document.getElementById("packageList");
+    box.innerHTML = "";
+
+    snap.forEach(p=>{
+        let pkg = p.val();
+
+        let div = document.createElement("div");
+        div.className = "pack";
+        div.dataset.key = p.key;
+
+        div.innerHTML = `
+            ${pkg.diamonds} 💎<br>
+            <span style='color:#1e90ff;font-size:17px;'>${pkg.price}৳</span>
+        `;
+
+        div.addEventListener("click", ()=>selectPackage(div,p.key,pkg));
+        box.appendChild(div);
+    });
+});
+
+/* SELECT PACKAGE */
+let selectedDiv = null;
+let selectedPackage = null;
+
+function selectPackage(div,key,data){
+    if(selectedDiv) selectedDiv.classList.remove("active");
+    div.classList.add("active");
+    selectedDiv = div;
+
+    selectedPackage = { key, ...data };
+}
+
+/* PAYMENT */
+let payMethod = null;
+
+function selectMethod(type){
+    payMethod = type;
+    document.querySelectorAll(".paybox").forEach(x=>x.classList.remove("active"));
+    document.getElementById(type==="wallet" ? "walletBox" : "autoBox").classList.add("active");
+}
+
+/* BUY */
+function buyNow(){
+    let user = auth.currentUser;
+    if(!user) return alert("Login First!");
+
+    if(!selectedPackage) return alert("Package Select করুন");
+
+    let id = String(playerId.value).trim();
+    if(id.length < 3) return alert("সঠিক UID লিখুন");
+
+    if(!payMethod) return alert("Pay method Select করুন");
+
+    let price = selectedPackage.price;
+
+    if(payMethod==="wallet"){
+        if(currentWallet < price) return alert("Wallet এ পর্যাপ্ত টাকা নেই!");
+        db.ref("wallet/"+user.uid).update({
+            dollar: currentWallet - price
+        });
+    }
+
+    let order = {
+        uid:user.uid,
+        email:user.email,
+        playerId:id,
+        package:selectedPackage,
+        price:price,
+        payMethod:payMethod,
+        status:"Pending",
+        time:Date.now()
+    };
+
+    db.ref("orders").push(order);
+
+    alert("Order Submitted!");
+    go("index.html");
+}
+
+</script>
+
+</body>
+</html>
