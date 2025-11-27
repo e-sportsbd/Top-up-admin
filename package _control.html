@@ -10,63 +10,160 @@
 <style>
 body{
     margin:0;
-    background:#0d0d0d;
-    color:white;
+    background:#f3f4f7;
     font-family:'Poppins',sans-serif;
 }
 
 h2{
     text-align:center;
-    margin:20px 0;
+    padding:18px 0;
+    background:white;
+    margin:0;
+    font-weight:600;
+    border-bottom:1px solid #ddd;
 }
 
-.box{
-    background:#1a1a1a;
-    margin:15px;
+/* CATEGORY CARDS (TOP POPUP) */
+.category-box{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:12px;
     padding:15px;
-    border-radius:12px;
 }
 
-input, select{
+.cat-card{
+    width:130px;
+    padding:20px 10px;
+    background:white;
+    border-radius:12px;
+    border:1px solid #dbe0e5;
+    text-align:center;
+    cursor:pointer;
+    font-weight:600;
+    color:#1877f2;
+    transition:0.2s;
+}
+
+.cat-card:hover{
+    background:#1877f2;
+    color:white;
+    box-shadow:0px 3px 8px rgba(0,0,0,0.2);
+}
+
+/* PACKAGE TABLE (ALWAYS AT BOTTOM) */
+.table-box{
+    width:95%;
+    margin:20px auto;
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    border:1px solid #dcdcdc;
+}
+
+.table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+.table th{
+    background:#1877f2;
+    color:white;
+    padding:10px;
+}
+
+.table td{
+    border:1px solid #ddd;
+    padding:10px;
+    text-align:center;
+}
+
+.btn-edit{
+    background:#ffb703;
+    padding:6px 12px;
+    border:none;
+    border-radius:8px;
+    color:black;
+    cursor:pointer;
+}
+
+.btn-delete{
+    background:#e63946;
+    padding:6px 12px;
+    border:none;
+    border-radius:8px;
+    color:white;
+    cursor:pointer;
+}
+
+/* POPUP */
+#popupBg{
+    display:none;
+    position:fixed;
+    left:0; top:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.6);
+}
+
+#popup{
+    width:90%;
+    max-width:380px;
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+}
+
+input{
     width:100%;
     padding:12px;
-    margin-top:8px;
-    background:#111;
-    border:1px solid #444;
-    border-radius:10px;
-    color:white;
+    margin-top:10px;
+    border-radius:8px;
+    border:1px solid #bbb;
 }
 
 button{
     width:100%;
     padding:12px;
-    margin-top:10px;
+    margin-top:8px;
     background:#1877f2;
     border:none;
-    border-radius:10px;
+    border-radius:8px;
     color:white;
     font-size:16px;
+}
+
+.cancel-btn{
+    background:#555;
+}
+
+/* BOTTOM CATEGORY TABS */
+.bottom-tabs{
+    width:95%;
+    margin:20px auto;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+}
+
+.bottom-tabs button{
+    padding:10px 16px;
+    border-radius:8px;
+    border:none;
+    background:#e8e8e8;
+    color:#1877f2;
+    font-weight:600;
     cursor:pointer;
+    transition:.2s;
 }
 
-.table{
-    margin-top:15px;
-    width:100%;
-    border-collapse:collapse;
-}
-
-.table th, .table td{
-    border:1px solid #555;
-    padding:10px;
-    text-align:center;
-}
-
-.delete-btn{
-    background:#e63946;
-}
-
-.edit-btn{
-    background:#ffb703;
+.bottom-tabs button:hover{
+    background:#1877f2;
+    color:white;
 }
 </style>
 </head>
@@ -74,22 +171,33 @@ button{
 
 <h2>🔥 ADMIN CONTROL PANEL</h2>
 
-<!-- ADD PACKAGE -->
-<div class="box">
-    <h3>➤ Add New Package</h3>
-
-    <input type="number" id="addDiamonds" placeholder="Diamonds (e.g., 100)">
-    <input type="number" id="addPrice" placeholder="Price (BDT)">
-    
-    <button onclick="addPackage()">ADD PACKAGE</button>
+<!-- TOP CATEGORY = ONLY POPUP -->
+<div class="category-box">
+    <div class="cat-card" onclick="addPopup('topup')">Topup</div>
+    <div class="cat-card" onclick="addPopup('weekly')">Weekly</div>
+    <div class="cat-card" onclick="addPopup('evo')">Evo</div>
+    <div class="cat-card" onclick="addPopup('lite')">Lite</div>
+    <div class="cat-card" onclick="addPopup('unipin')">Unipin</div>
+    <div class="cat-card" onclick="addPopup('levelup')">Level Up</div>
 </div>
 
-<!-- PACKAGE LIST -->
-<div class="box">
-    <h3>➤ All Packages</h3>
+<!-- BOTTOM CATEGORY = PACKAGE SHOW -->
+<div class="bottom-tabs">
+    <button onclick="changeCategory('topup')">Topup</button>
+    <button onclick="changeCategory('weekly')">Weekly</button>
+    <button onclick="changeCategory('evo')">Evo</button>
+    <button onclick="changeCategory('lite')">Lite</button>
+    <button onclick="changeCategory('unipin')">Unipin</button>
+    <button onclick="changeCategory('levelup')">Level Up</button>
+</div>
+
+<!-- PACKAGE TABLE ALWAYS AT BOTTOM -->
+<div class="table-box">
+    <h3>📦 Packages of: <span id="currentCat">topup</span></h3>
 
     <table class="table" id="packageTable">
         <tr>
+            <th>Title</th>
             <th>Diamonds</th>
             <th>Price</th>
             <th>Action</th>
@@ -97,155 +205,142 @@ button{
     </table>
 </div>
 
-<!-- USER BALANCE -->
-<div class="box">
-    <h3>➤ Add User Balance</h3>
+<!-- POPUP -->
+<div id="popupBg">
+    <div id="popup">
+        <h3 id="popupTitle">Add Package</h3>
 
-    <input type="text" id="balanceUid" placeholder="User UID">
-    <input type="number" id="balanceAmount" placeholder="Amount (৳)">
-    
-    <button onclick="addBalance()">ADD BALANCE</button>
+        <input type="text" id="titleInput" placeholder="Package Title">
+        <input type="number" id="diamondInput" placeholder="Diamonds">
+        <input type="number" id="priceInput" placeholder="Price">
+
+        <button onclick="savePackage()">Save</button>
+        <button class="cancel-btn" onclick="closePopup()">Cancel</button>
+    </div>
 </div>
 
-<!-- ORDERS -->
-<div class="box">
-    <h3>➤ Orders Management</h3>
-
-    <table class="table" id="orderTable">
-        <tr>
-            <th>Player</th>
-            <th>Package</th>
-            <th>Pay</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </table>
-</div>
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
 const firebaseConfig = {
     apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
-            authDomain: "noreply@post-c7e41.firebaseapp.com",
-            databaseURL: "https://post-c7e41-default-rtdb.firebaseio.com",
-            projectId: "post-c7e41",
-            messagingSenderId: "758133068153",
-            appId: "1:758133068153:web:28ef27e45d8037e0d49fa8"
+    authDomain: "noreply@post-c7e41.firebaseapp.com",
+    databaseURL: "https://post-c7e41-default-rtdb.firebaseio.com",
+    projectId: "post-c7e41",
+    messagingSenderId: "758133068153",
+    appId: "1:758133068153:web:28ef27e45d8037e0d49fa8"
 };
-firebase.initializeApp(firebaseConfig);
 
+firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --------------------
-// ADD PACKAGE
-// --------------------
-function addPackage(){
-    let d = document.getElementById("addDiamonds").value;
-    let p = document.getElementById("addPrice").value;
+let selectedCat = "topup";
+let editId = "";
+let editMode = false;
 
-    if(d=="" || p==""){ alert("Input missing"); return; }
+/* TOP POPUP BUTTON */
+function addPopup(cat){
+    selectedCat = cat;
+    document.getElementById("popupTitle").innerText = "Add Package";
 
-    db.ref("packages").push({
-        diamonds: Number(d),
-        price: Number(p)
-    });
+    titleInput.value = "";
+    diamondInput.value = "";
+    priceInput.value = "";
 
-    alert("Package Added!");
+    editMode = false;
+
+    popupBg.style.display = "block";
 }
 
-// --------------------
-// SHOW PACKAGE LIST
-// --------------------
-db.ref("packages").on("value", snap => {
-    let table = document.getElementById("packageTable");
-    table.innerHTML = `
-        <tr>
-            <th>Diamonds</th>
-            <th>Price</th>
-            <th>Action</th>
-        </tr>
-    `;
+/* BOTTOM CATEGORY BUTTON → SHOW TABLE */
+function changeCategory(cat){
+    selectedCat = cat;
+    document.getElementById("currentCat").innerText = cat;
+    loadPackages();
+}
 
-    snap.forEach(p => {
-        let d = p.val();
-        table.innerHTML += `
+/* LOAD PACKAGES AT BOTTOM */
+function loadPackages(){
+    db.ref("products/"+selectedCat).on("value", snap => {
+        let table = document.getElementById("packageTable");
+        table.innerHTML = `
             <tr>
-                <td>${d.diamonds}</td>
-                <td>${d.price}</td>
-                <td>
-                    <button class="delete-btn" onclick="deletePackage('${p.key}')">Delete</button>
-                </td>
+                <th>Title</th>
+                <th>Diamonds</th>
+                <th>Price</th>
+                <th>Action</th>
             </tr>
         `;
-    });
-});
 
+        snap.forEach(item=>{
+            let v = item.val();
+            table.innerHTML += `
+                <tr>
+                    <td>${v.title}</td>
+                    <td>${v.diamonds}</td>
+                    <td>${v.price}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editPackage('${item.key}','${v.title}',${v.diamonds},${v.price})">Edit</button>
+                        <button class="btn-delete" onclick="deletePackage('${item.key}')">Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
+    });
+}
+loadPackages();
+
+/* EDIT PACKAGE */
+function editPackage(id,t,d,p){
+    editMode = true;
+    editId = id;
+
+    popupTitle.innerText = "Edit Package";
+    titleInput.value = t;
+    diamondInput.value = d;
+    priceInput.value = p;
+
+    popupBg.style.display = "block";
+}
+
+/* SAVE PACKAGE */
+function savePackage(){
+    let t = titleInput.value;
+    let d = diamondInput.value;
+    let p = priceInput.value;
+
+    if(t=="" || d=="" || p=="") return alert("Fill all fields!");
+
+    if(editMode){
+        db.ref("products/"+selectedCat+"/"+editId).update({
+            title:t,
+            diamonds:Number(d),
+            price:Number(p)
+        });
+        alert("Updated!");
+    } else {
+        db.ref("products/"+selectedCat).push({
+            title:t,
+            diamonds:Number(d),
+            price:Number(p)
+        });
+        alert("Added!");
+    }
+
+    closePopup();
+}
+
+/* DELETE */
 function deletePackage(id){
-    db.ref("packages/"+id).remove();
+    db.ref("products/"+selectedCat+"/"+id).remove();
     alert("Deleted!");
 }
 
-// --------------------
-// ADD USER BALANCE
-// --------------------
-function addBalance(){
-    let uid = document.getElementById("balanceUid").value;
-    let amt = Number(document.getElementById("balanceAmount").value);
-
-    if(uid=="" || amt==""){ alert("Input missing"); return; }
-
-    db.ref("users/"+uid+"/balance").transaction(b => {
-        return (b || 0) + amt;
-    });
-
-    alert("Balance Added!");
-}
-
-// --------------------
-// SHOW ORDERS
-// --------------------
-db.ref("orders").on("value", snap => {
-    let table = document.getElementById("orderTable");
-    table.innerHTML = `
-        <tr>
-            <th>Player</th>
-            <th>Package</th>
-            <th>Pay</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    `;
-
-    snap.forEach(o => {
-        let d = o.val();
-
-        table.innerHTML += `
-            <tr>
-                <td>${d.playerId}</td>
-                <td>${d.package.diamonds} 💎</td>
-                <td>${d.payMethod}</td>
-                <td>${d.status}</td>
-                <td>
-                    <button onclick="approveOrder('${o.key}')">Approve</button>
-                    <button onclick="finishOrder('${o.key}')">Done</button>
-                </td>
-            </tr>
-        `;
-    });
-});
-
-// APPROVE
-function approveOrder(id){
-    db.ref("orders/"+id+"/status").set("Approved");
-    alert("Approved!");
-}
-
-// COMPLETE
-function finishOrder(id){
-    db.ref("orders/"+id+"/status").set("Delivered");
-    alert("Delivered!");
+/* CLOSE POPUP */
+function closePopup(){
+    popupBg.style.display="none";
 }
 </script>
 

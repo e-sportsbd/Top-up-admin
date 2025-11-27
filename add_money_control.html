@@ -158,27 +158,47 @@ function saveNumbers(){
 fs.collection("addMoney")
   .where("status", "==", "pending")
   .orderBy("time", "desc")
-  .onSnapshot(snapshot => {
+  .onSnapshot(async snapshot => {
 
       let html = "";
 
-      snapshot.forEach(doc=>{
+      for(let doc of snapshot.docs){
         let d = doc.data();
+
+        // Load user info from "users" collection
+        let userDoc = await fs.collection("users").doc(d.uid).get();
+        let u = userDoc.exists ? userDoc.data() : {};
+
+        // Auto detect phone field (profile phone)
+        let profilePhone =
+            u.phone ||
+            u.number ||
+            u.mobile ||
+            u.phoneNumber ||
+            u.phn ||
+            "N/A";
 
         html += `
         <div class="req">
+          <p><b>Name:</b> ${u.name || "N/A"}</p>
+          <p><b>Email:</b> ${u.email || "N/A"}</p>
+          <p><b>Phone (Profile):</b> ${profilePhone}</p>
+
+          <p><b>Phone (Typed in Add Money Page):</b> ${d.userPhone || "N/A"}</p>
+
           <p><b>User UID:</b> ${d.uid}</p>
           <p><b>Amount:</b> ${d.amount} Tk</p>
           <p><b>Method:</b> ${d.method}</p>
           <p><b>TxID:</b> ${d.txid}</p>
-          <p><b>Number:</b> ${d.number}</p>
+          <p><b>Sent To Number:</b> ${d.number}</p>
+
           <p class="small">${d.time ? d.time.toDate() : ""}</p>
 
           <button class="approve" onclick="approve('${doc.id}', '${d.uid}', ${d.amount})">Approve</button>
           <button class="reject" onclick="rejectReq('${doc.id}')">Reject</button>
         </div>
         `;
-      });
+      }
 
       if(snapshot.empty){
         html = "<p>No pending request</p>";
@@ -193,17 +213,10 @@ fs.collection("addMoney")
 // ---------- APPROVE REQUEST + UPDATE BALANCE ----------
 function approve(id, uid, amount){
 
-  if(!uid){
-    alert("Error: UID Missing!");
-    return;
-  }
-
-  // Step 1: mark approved
   fs.collection("addMoney").doc(id).update({
     status: "approved"
   });
 
-  // Step 2: Update balance in NEW folder: wallet/{uid}/dollar
   const balanceRef = rtdb.ref("wallet/" + uid + "/dollar");
 
   balanceRef.once("value").then(snap =>{
@@ -215,7 +228,6 @@ function approve(id, uid, amount){
         dollar: updated
       }).then(()=>{
 
-        // Step 3: mark success
         fs.collection("addMoney").doc(id).update({
           status: "success"
         });
