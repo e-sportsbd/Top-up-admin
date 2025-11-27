@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support Page Admin Panel</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+        background: #0f0f0f;
+        color: #fff;
+    }
+
+    .container {
+        width: 92%;
+        max-width: 500px;
+        margin: 40px auto;
+        background: #1a1a1a;
+        padding: 25px;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 24px;
+        font-weight: 600;
+    }
+
+    label {
+        font-size: 15px;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        margin-bottom: 15px;
+        background: #2a2a2a;
+        color: white;
+        font-size: 14px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        background: #2563eb;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #1e48b5;
+    }
+
+    .msg {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 15px;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Support Page Control</h2>
+
+    <label>Telegram Helpline Link</label>
+    <input id="telegram_link" type="text" placeholder="https://t.me/your_telegram">
+
+    <label>YouTube Channel Link</label>
+    <input id="youtube_link" type="text" placeholder="https://youtube.com/...">
+
+    <label>Facebook Page Link</label>
+    <input id="facebook_link" type="text" placeholder="https://facebook.com/...">
+
+    <label>Contact Email</label>
+    <input id="contact_email" type="text" placeholder="support@gmail.com">
+
+    <label>Contact Phone</label>
+    <input id="contact_phone" type="text" placeholder="+88017xxxxxxxx">
+
+    <label>Telegram Contact Link</label>
+    <input id="contact_telegram" type="text" placeholder="https://t.me/...">
+
+    <button onclick="saveData()">Save Changes</button>
+
+    <div class="msg" id="msgBox"></div>
+</div>
+
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
+            authDomain: "noreply@post-c7e41.firebaseapp.com",
+            databaseURL: "https://post-c7e41-default-rtdb.firebaseio.com",
+            projectId: "post-c7e41",
+            messagingSenderId: "758133068153",
+            appId: "1:758133068153:web:28ef27e45d8037e0d49fa8"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+
+// Load existing data
+db.ref("support_page").on("value", snap => {
+    const d = snap.val() || {};
+
+    document.getElementById("telegram_link").value = d.telegram_link || "";
+    document.getElementById("youtube_link").value = d.youtube_link || "";
+    document.getElementById("facebook_link").value = d.facebook_link || "";
+    document.getElementById("contact_email").value = d.contact_email || "";
+    document.getElementById("contact_phone").value = d.contact_phone || "";
+    document.getElementById("contact_telegram").value = d.contact_telegram || "";
+});
+
+
+// Save Button
+function saveData() {
+
+    const data = {
+        telegram_link: document.getElementById("telegram_link").value,
+        youtube_link: document.getElementById("youtube_link").value,
+        facebook_link: document.getElementById("facebook_link").value,
+        contact_email: document.getElementById("contact_email").value,
+        contact_phone: document.getElementById("contact_phone").value,
+        contact_telegram: document.getElementById("contact_telegram").value
+    };
+
+    db.ref("support_page").update(data, err => {
+        const msg = document.getElementById("msgBox");
+
+        if (err) {
+            msg.style.color = "red";
+            msg.innerText = "❌ Error saving data!";
+        } else {
+            msg.style.color = "lightgreen";
+            msg.innerText = "✔ Saved successfully!";
+        }
+
+        setTimeout(() => msg.innerText = "", 2500);
+    });
+
+}
+
+</script>
+
+</body>
+</html>
