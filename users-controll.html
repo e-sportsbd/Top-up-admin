@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>User Control – Admin</title>
+<title>User Control Panel</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
@@ -13,193 +13,137 @@ body{
     background:#0d0d0d;
     color:white;
     font-family:'Poppins',sans-serif;
-    padding:15px;
 }
 
-/* Header */
 .header{
+    text-align:center;
     background:#1e90ff;
     padding:15px;
     font-size:22px;
     font-weight:700;
-    text-align:center;
-    border-radius:12px;
-    margin-bottom:15px;
+    box-shadow:0 0 10px #000;
 }
 
-/* User Card */
-.card{
-    background:#1a1a1a;
+.container{
+    max-width:650px;
+    margin:auto;
     padding:15px;
+}
+
+.user-box{
+    background:#151515;
     border-radius:12px;
-    margin-bottom:15px;
-    border:1px solid #333;
-    box-shadow:0 0 10px rgba(0,0,0,0.25);
+    padding:15px;
+    margin-top:12px;
+    box-shadow:0 0 8px #000;
 }
 
-.row{ margin:6px 0; }
-.key{ color:#7abaff; font-weight:600; }
-.value{ font-weight:600; }
-
-/* Input */
-.input-small{
-    width:100%;
-    padding:10px 12px;
-    border:none;
-    border-radius:8px;
-    margin-top:6px;
-    font-size:16px;
+.user-box p{
+    margin:4px 0;
 }
 
-/* Buttons */
-.blue-btn{
-    background:#1e90ff;
-    padding:10px 15px;
-    margin-top:8px;
+button{
+    padding:8px 12px;
     border:none;
-    border-radius:8px;
-    font-weight:700;
+    border-radius:10px;
+    margin-right:5px;
+    margin-top:5px;
+    font-weight:600;
     cursor:pointer;
-    width:100%;
 }
 
-.red-btn{
-    background:#ff1744;
-    padding:10px 15px;
-    margin-top:8px;
-    border:none;
+.editBtn{ background:#1e90ff; color:white; }
+.banBtn{ background:#ff3b3b; color:white; }
+.unbanBtn{ background:#00cc66; color:white; }
+
+input{
+    width:90px;
+    padding:5px;
     border-radius:8px;
-    font-weight:700;
-    cursor:pointer;
-    width:100%;
+    border:none;
+    margin-right:5px;
+    margin-top:5px;
+    background:#222;
+    color:white;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">User Control Panel</div>
+<div class="header">USER CONTROL PANEL</div>
 
-<div id="userList">লোড হচ্ছে...</div>
+<div class="container" id="userList"></div>
 
-<!-- Firebase -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// FIREBASE CONFIG (FULL)
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
   authDomain: "post-c7e41.firebaseapp.com",
   databaseURL: "https://post-c7e41-default-rtdb.firebaseio.com/",
-  projectId: "post-c7e41",
-  storageBucket: "post-c7e41.appspot.com",
-  messagingSenderId: "758133068153",
-  appId: "1:758133068153:web:5513a1de83491c81776084"
+  projectId: "post-c7e41"
 };
-
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.database();
 
-/* AUTH CHECK (MUST NEED) */
-firebase.auth().onAuthStateChanged(user => {
-    if (!user) {
-        alert("Please login first!");
-        location.href = "login.html";  // আপনার login page 
-        return;
+// LOAD ALL USERS
+db.ref("users").on("value", snap=>{
+    let data = snap.val();
+    let box = "";
+
+    for(let uid in data){
+        let user = data[uid];
+
+        box += `
+        <div class="user-box">
+            <p><b>Name:</b> ${user.name}</p>
+            <p><b>Email:</b> ${user.email}</p>
+            <p><b>Phone:</b> ${user.phone}</p>
+            <p><b>UID:</b> ${uid}</p>
+
+            <p><b>Status:</b> ${user.ban==true ? "<span style='color:red;'>BANNED</span>" : "<span style='color:#00ff99;'>ACTIVE</span>"}</p>
+
+            <div>
+                <input type="number" id="bal_${uid}" placeholder="Amount">
+                <button class="editBtn" onclick="updateBalance('${uid}')">Update</button>
+
+                ${user.ban==true 
+                    ? `<button class="unbanBtn" onclick="unbanUser('${uid}')">Unban</button>`
+                    : `<button class="banBtn" onclick="banUser('${uid}')">Ban</button>`
+                }
+            </div>
+        </div>
+        `;
     }
 
-    loadUsers();
+    document.getElementById("userList").innerHTML = box;
 });
 
-/* LOAD USERS */
-function loadUsers() {
-    db.ref("users").on("value", snap => {
+// UPDATE BALANCE
+function updateBalance(uid){
+    let amount = document.getElementById("bal_"+uid).value;
+    if(amount=="") return alert("Enter amount!");
 
-        const box = document.getElementById("userList");
-        box.innerHTML = "";
-
-        if (!snap.exists()) {
-            box.innerHTML = "<div style='color:white;text-align:center;margin-top:20px;'>No Users Found</div>";
-            return;
-        }
-
-        snap.forEach(u => {
-            let data = u.val();
-            let uid = u.key;
-
-            let card = document.createElement("div");
-            card.className = "card";
-
-            card.innerHTML = `
-                <div class="row"><span class="key">UID:</span> <span class="value">${uid}</span></div>
-                <div class="row"><span class="key">Name:</span> <span class="value">${data.name || "No Name"}</span></div>
-                <div class="row"><span class="key">Email:</span> <span class="value">${data.email || "N/A"}</span></div>
-                <div class="row"><span class="key">Phone:</span> <span class="value">${data.phone || "No Number"}</span></div>
-
-                <div class="row"><span class="key">Wallet:</span> 
-                    <span id="wallet_${uid}" class="value">Loading...</span>
-                </div>
-
-                <input id="add_${uid}" class="input-small" type="number" placeholder="Add Money (৳)">
-                <button class="blue-btn" onclick="addMoney('${uid}')">Add Balance</button>
-
-                <input id="remove_${uid}" class="input-small" type="number" placeholder="Remove Money (৳)">
-                <button class="blue-btn" onclick="removeMoney('${uid}')">Remove Balance</button>
-
-                <button class="red-btn" onclick="deleteUser('${uid}')">Delete User</button>
-            `;
-
-            box.appendChild(card);
-
-            /* LIVE WALLET LOAD */
-            db.ref("wallet/" + uid).on("value", w => {
-                document.getElementById("wallet_" + uid).innerText =
-                    (w.val()?.dollar || 0) + "৳";
-            });
-        });
-    });
+    db.ref("wallet/"+uid).update({ dollar: Number(amount) });
+    alert("Balance Updated!");
 }
 
-/* ADD MONEY */
-function addMoney(uid){
-    let val = parseInt(document.getElementById("add_"+uid).value);
-    if (!val) return alert("Amount লিখুন");
-
-    let ref = db.ref("wallet/"+uid);
-
-    ref.once("value", snap => {
-        let now = snap.val()?.dollar || 0;
-        ref.update({ dollar: now + val });
-        alert("Balance Added!");
-    });
+// BAN USER
+function banUser(uid){
+    db.ref("users/"+uid).update({ ban:true });
+    alert("User Banned!");
 }
 
-/* REMOVE MONEY */
-function removeMoney(uid){
-    let val = parseInt(document.getElementById("remove_"+uid).value);
-    if (!val) return alert("Amount লিখুন");
-
-    let ref = db.ref("wallet/"+uid);
-
-    ref.once("value", snap => {
-        let now = snap.val()?.dollar || 0;
-
-        if (now < val) return alert("Balance কম আছে!");
-
-        ref.update({ dollar: now - val });
-        alert("Balance Removed!");
-    });
-}
-
-/* DELETE USER */
-function deleteUser(uid){
-    if(!confirm("User ডিলিট করতে চান?")) return;
-
-    db.ref("users/"+uid).remove();
-    db.ref("wallet/"+uid).remove();
-
-    alert("User Deleted!");
+// UNBAN USER
+function unbanUser(uid){
+    db.ref("users/"+uid).update({ ban:false });
+    alert("User Unbanned!");
 }
 </script>
 

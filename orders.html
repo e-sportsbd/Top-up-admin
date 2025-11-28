@@ -116,9 +116,14 @@ db.ref("orders").on("value", snap => {
             <div class="row"><span class="key">Status:</span> <span class="value">${data.status}</span></div>
             <div class="row"><span class="key">Time:</span> <span class="value">${formatDate(data.time)}</span></div>
 
-            <button class="status-btn pending" onclick="updateStatus('${order.key}','Pending')">Pending</button>
-            <button class="status-btn success" onclick="updateStatus('${order.key}','Success')">Success</button>
-            <button class="status-btn cancel" onclick="updateStatus('${order.key}','Cancelled')">Cancel</button>
+            <button class="status-btn pending" 
+            onclick="updateStatus('${order.key}','Pending')">Pending</button>
+
+            <button class="status-btn success" 
+            onclick="markSuccess('${order.key}', '${data.uid}', '${data.playerId}', ${JSON.stringify(data.package).replace(/"/g,'&quot;')}, '${data.price}', '${data.payMethod}', '${data.time}')">Success</button>
+
+            <button class="status-btn cancel" 
+            onclick="cancelOrder('${order.key}','${data.uid}','${data.playerId}',${JSON.stringify(data.package).replace(/"/g,'&quot;')},'${data.price}','${data.payMethod}','${data.time}')">Cancel</button>
 
             <button class="delete-btn" onclick="deleteOrder('${order.key}')">Delete Order</button>
         `;
@@ -127,10 +132,50 @@ db.ref("orders").on("value", snap => {
     });
 });
 
-// Update Status
+// Normal Status Update
 function updateStatus(id,status){
     db.ref("orders/"+id).update({ status });
     alert("Status Updated: " + status);
+}
+
+// SUCCESS: Move to user history + remove from admin panel
+function markSuccess(id, uid, playerId, packageData, price, payMethod, time){
+
+    const historyData = {
+        orderId: id,
+        playerId,
+        package: packageData,
+        price,
+        payMethod,
+        status: "Success",
+        time
+    };
+
+    db.ref("users/" + uid + "/orderHistory/" + id).set(historyData);
+
+    db.ref("orders/" + id).remove();
+
+    alert("Order Completed Successfully!");
+}
+
+// CANCEL: save rejected + remove from admin
+function cancelOrder(id, uid, playerId, packageData, price, payMethod, time){
+
+    const historyData = {
+        orderId: id,
+        playerId,
+        package: packageData,
+        price,
+        payMethod,
+        status: "Rejected",
+        time
+    };
+
+    db.ref("users/" + uid + "/orderHistory/" + id).set(historyData);
+
+    db.ref("orders/" + id).remove();
+
+    alert("Order Cancelled & Removed from Admin Panel!");
 }
 
 // Delete Order
